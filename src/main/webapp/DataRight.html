@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Orign</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+    <script type="text/javascript" src="jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <nav class="navbar navbar-inverse">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-menu" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="">菜单</a>
+        </div>
+        <div id="navbar-menu" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="I18N.html">国际化(I18N_DATA表)</a></li>
+                <li><a href="index.html">菜单(MENU)表</a></li>
+                <li><a href="Right.html">权限(RIGHT)表</a></li>
+                <li><a href="DataRight.html">根数据权限(RIGHT)表</a></li>
+            </ul>
+        </div>
+    </nav>
+    <form id="form" class="form-horizontal">
+        <div class="form-group" style="overflow: hidden; width: 90%; margin-left: 5%; margin-right: 5%;">
+            <div id="input-values" style="overflow: hidden; float: left; width: 100%;">
+                <div style="float: left; margin-top: 5px; width: 50%">
+                    <label class="col-sm-3 control-label" for="SERIAL_NUMBER">SERIAL_NUMBER</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="SERIAL_NUMBER" type="text" placeholder="根数据权限的数量"/>
+                    </div>
+                </div>
+                <div style="float: left; margin-top: 5px; width: 50%">
+                    <label class="col-sm-3 control-label" for="RIGHT_OBJECT_CLASS">RIGHT_OBJECT_CLASS</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="RIGHT_OBJECT_CLASS" type="text" placeholder="权限对象分类，枚举的序列号"/>
+                    </div>
+                </div>
+                <div style="float: left; margin-top: 5px; width: 50%">
+                    <label class="col-sm-3 control-label" for="CODE">CODE</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="CODE" type="text" placeholder="I18N_DATA表中ID大写"/>
+                    </div>
+                </div>
+                <div style="float: left; margin-top: 5px; width: 50%">
+                    <label class="col-sm-3 control-label" for="NAME">NAME</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="NAME" type="text" placeholder="I18N_DATA表中的英文名"/>
+                    </div>
+                </div>
+                <div style="float: left; margin-top: 5px; width: 50%">
+                    <label class="col-sm-3 control-label" for="RIGHT_ID">RIGHT_ID</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="RIGHT_ID" type="text" placeholder="RIGHT表中查找出可用权限的id"/>
+                    </div>
+                </div>
+                <div class="col-sm-6" style="margin-right: 0px; margin-top: 5px;">
+                    <button id="dataRightBtnSubmit" type="button" class="btn btn-primary pull-right" >生成根数据权限表sql</button>
+                </div>
+                <div style="float: left; margin-top: 5px; width: 50%">
+
+                </div>
+            </div>
+
+            <div class="col-sm-12" style="float: left; width: 100%; margin-top: 20px;">
+                <textarea id="dataRightSql" class="form-control col-sm-12" rows="30" readonly="readonly"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+
+<button id="dialogBtn" class="btn btn-primary btn-lg" style="display: none;" data-toggle="modal" data-target="#myModal"></button>
+<div id="myModal" class="modal fade" style="width: 600px; height: 300px; top: 50%; left: 50%; margin-top: -150px; margin-left: -300px; overflow: hidden" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label style="color: #ff0000;">必要条件为空!!!</label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript">
+    $('#dataRightBtnSubmit').click(function(){
+        $('#dataRightSql').val("");
+        var textValues = $('#input-values div div input');
+        var flag = true;
+        if (null != textValues.length && textValues.length > 0) {
+            for (var i = 0; i < textValues.length; i++) {
+                if (null == textValues[i].value || "" == textValues[i].value.trim()) {
+                    flag = false
+                }
+            }
+        } else {
+            flag = false
+        }
+
+        var textOne = '--插入数据权限前先对数据库脏数据处理，公司id>25的公司状态全部置位无效，目前已经增加到25个公司，以后增加，此变量需要更改\n' +
+            'UPDATE COMPANY c SET c.status=0 WHERE c.id>25;\n' +
+            '--每次增加顶层数据权限只需要更改一下变量即可\n' +
+            'DECLARE\n' +
+            '  SERIAL_NUMBER NUMBER(4) :=';
+        var textTwo = ';              \t\t\t--显示顺序号\n' +
+            '  RIGHT_OBJECT_CLASS NUMBER(2) :=';
+        var textThree = ';        \t\t--权限对象分类，枚举的序列号\n' +
+            '  CODE VARCHAR2(100) :=\'';
+        var textFour = '\';  \t--编码\n' +
+            '  NAME VARCHAR2(100) :=\'';
+        var textFive = '\'; \t\t\t--名称\n' +
+            '  RIGHT_ID NUMBER(10) :=';
+        var textSix = ';               \t\t\t \t--权限标识,循环的起始位置，此变量每次增加都需要按照增加按钮权限的方式查找id\n' +
+            '  LOOP_NUM NUMBER(3);                       \t\t\t \t--循环次数，需要动态赋值\n' +
+            '  V_SQL VARCHAR2(200);                      \t\t\t\t--动态执行的sql\n' +
+            '  CURSOR V_COMPANY IS\n' +
+            '    SELECT c.id FROM COMPANY c WHERE c.status=1 ORDER BY c.id ASC;\n' +
+            '  i number(2) :=1;\n' +
+            'BEGIN\n' +
+            '  V_SQL :=\'SELECT count(1) FROM COMPANY c WHERE c.status=1\';\n' +
+            '  EXECUTE IMMEDIATE v_sql INTO LOOP_NUM;\n' +
+            '  FOR V_ID IN V_COMPANY LOOP\n' +
+            '    INSERT INTO RIGHT (ID, CODE, NAME, TYPE, IS_ASSIGNABLE, SERIAL_NUMBER, PARENT_ID, RIGHT_OBJECT_CLASS, RIGHT_OBJECT_ID, COMPANY_ID, STATUS, VERSION, CREATE_ID, MODIFY_ID, TRANSACTION_ID, SERVER_NAME, CREATE_INSTANT, MODIFY_INSTANT)\n' +
+            '    VALUES( RIGHT_ID+i,CODE,NAME,1, 0,SERIAL_NUMBER, null, RIGHT_OBJECT_CLASS,null,V_ID.id,  1,1, null, null, null, \'127.0.0.1\', systimestamp, systimestamp);\n' +
+            '    i :=i+1;\n' +
+            '    IF i>LOOP_NUM THEN\n' +
+            '      COMMIT;\n' +
+            '    END IF;\n' +
+            '  END loop;\n' +
+            '  COMMIT;\n' +
+            'END;\n' +
+            '/';
+
+
+        if (flag) {
+            var text = textOne + $('#SERIAL_NUMBER').val() + textTwo + $('#RIGHT_OBJECT_CLASS').val() + textThree + $('#CODE').val() + textFour + $('#NAME').val() + textFive + $('#RIGHT_ID').val() + textSix;
+            $('#dataRightSql').val(text);
+        } else {
+            $('#dialogBtn').click();
+        }
+    });
+</script>
+
+</html>

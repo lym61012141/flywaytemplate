@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FlyWay脚本</title>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.css" />
+    <script type="text/javascript" src="jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="bootstrap/js/bootstrap.js"></script>
+</head>
+
+<body>
+<div class="container-fluid">
+    <nav class="navbar navbar-inverse">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-menu" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="">菜单</a>
+        </div>
+        <div id="navbar-menu" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="I18N.html">国际化(I18N_DATA表)</a></li>
+                <li><a href="index.html">菜单(MENU)表</a></li>
+                <li><a href="Right.html">权限(RIGHT)表</a></li>
+                <li><a href="DataRight.html">根数据权限(RIGHT)表</a></li>
+            </ul>
+        </div>
+    </nav>
+    <form id="form" name="form" action="" class="form-horizontal">
+        <div class="form-group" style="overflow: hidden; width: 90%; margin-left: 5%">
+            <div id="input-values" style="float: left; width: 100%; overflow: hidden">
+                <div style="float: left; width: 50%; margin-top: 5px;">
+                    <label class="col-sm-2 control-label " for="ID">ID</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="ID" type="text" placeholder="ID"/>
+                    </div>
+                </div>
+                <div style="float: left; width: 50%; margin-top: 5px;">
+                    <label class="col-sm-2 control-label " for="CODE">CODE</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="CODE" type="text" placeholder="CODE"/>
+                    </div>
+                </div>
+                <div style="float: left; width: 50%; margin-top: 5px;">
+                    <label class="col-sm-2 control-label " for="NAME">NAME</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="NAME" type="text" placeholder="NAME"/>
+                    </div>
+                </div>
+                <div style="float: left; width: 50%; margin-top: 5px;">
+                    <label class="col-sm-2 control-label " for="MENU_CATALOG_ID">MENU_CATALOG_ID</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="MENU_CATALOG_ID" type="text" placeholder="MENU_CATALOG_ID"/>
+                    </div>
+                </div>
+
+                <div style="float: left; width: 50%; margin-top: 5px;">
+                    <label class="col-sm-2 control-label " for="URL">URL</label>
+                    <div class="col-sm-9">
+                        <input class="form-control" id="URL" type="text" placeholder="URL"/>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="margin-right: 0px; margin-top: 5px;">
+                    <button id="menuBtnSubmit" type="button" class="btn btn-primary pull-right" >生成菜单表sql</button>
+                </div>
+            </div>
+
+            <div class="col-sm-12" style="float: left; width: 100%; margin-top: 20px;">
+                <textarea id="menuSql" class="form-control col-sm-12" rows="4" readonly="readonly"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+
+<button id="dialogBtn" class="btn btn-primary btn-lg" style="display: none;" data-toggle="modal" data-target="#myModal"></button>
+<div id="myModal" class="modal fade" style="width: 600px; height: 300px; top: 50%; left: 50%; margin-top: -150px; margin-left: -300px; overflow: hidden" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    错误
+                </h4>
+            </div>
+            <div class="modal-body">
+                <label style="color: #ff0000;">必要条件为空!!!</label>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+    $('#menuBtnSubmit').click(function(){
+        $('#menuSql').val("");
+        var textValues = $('#input-values div div input');
+        var flag = true;
+        if (null != textValues.length && textValues.length > 0) {
+            for (var i = 0; i < textValues.length; i++) {
+                if (null == textValues[i].value || "" == textValues[i].value.trim()) {
+                    flag = false
+                }
+            }
+        } else {
+            flag = false
+        }
+
+        if (flag) {
+            var textOne = 'INSERT INTO MENU (ID, CODE, NAME, MENU_CATALOG_ID, URL, STATUS, VERSION, CREATE_ID, MODIFY_ID, TRANSACTION_ID, SERVER_NAME, CREATE_INSTANT, MODIFY_INSTANT)';
+            $('#menuSql').val(textOne+'\nVALUES('+$('#ID').val() +', \''+ $('#CODE').val() + '\', '  + '\''+ $('#NAME').val()  + '\', ' + $('#MENU_CATALOG_ID').val() + ', \''+  $('#URL').val() + '\', ' + '1, 1, NULL, NULL, NULL, \'127.0.0.1\', systimestamp, systimestamp'+');');
+        } else {
+            $('#dialogBtn').click();
+        }
+    });
+</script>
+
+</html>
